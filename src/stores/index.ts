@@ -12,20 +12,32 @@ interface AuthState {
   setUser: (user: User) => void
 }
 
+const savedUser = (() => {
+  try {
+    const raw = localStorage.getItem('pinjamku_user')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+})()
+
 export const useAuthStore = create<AuthState>((set) => ({
-  user: mockUser,
-  isAuthenticated: true,
+  user: savedUser,
+  isAuthenticated: !!savedUser,
   isLoading: false,
   login: async (_email: string, _password: string) => {
     set({ isLoading: true })
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 800))
     set({ user: mockUser, isAuthenticated: true, isLoading: false })
+    localStorage.setItem('pinjamku_user', JSON.stringify(mockUser))
   },
   logout: () => {
+    localStorage.removeItem('pinjamku_user')
     set({ user: null, isAuthenticated: false })
   },
   setUser: (user: User) => {
-    set({ user })
+    localStorage.setItem('pinjamku_user', JSON.stringify(user))
+    set({ user, isAuthenticated: true })
   },
 }))
 
